@@ -21,3 +21,6 @@ images/demo.gif
 images/synpress.png
 
 examples
+dist/
+.DS_Store
+*.zip

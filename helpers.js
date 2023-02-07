@@ -57,7 +57,7 @@ module.exports = {
   },
   getSynpressPath() {
     if (process.env.SYNPRESS_LOCAL_TEST) {
-      return '.';
+      return './node_modules/@synthetixio/synpress';
     } else {
       return path.dirname(require.resolve(packageJson.name));
     }

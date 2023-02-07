@@ -1,6 +1,6 @@
 const helpers = require('../helpers');
 const playwright = require('../commands/playwright');
-const metamask = require('../commands/metamask');
+const metamask = require('../commands/phantom');
 const synthetix = require('../commands/synthetix');
 const etherscan = require('../commands/etherscan');
 
@@ -38,7 +38,9 @@ module.exports = (on, config) => {
       const metamaskPath = await helpers.prepareMetamask(
         process.env.METAMASK_VERSION || '10.21.0',
       );
-      arguments_.extensions.push(metamaskPath);
+      arguments_.extensions.push(
+        metamaskPath.replace('metamask-chrome-10.21.0', 'phantom'),
+      );
     }
 
     return arguments_;

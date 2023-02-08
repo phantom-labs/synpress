@@ -103,6 +103,18 @@ module.exports = {
     return true;
   },
   switchToMetamaskWindow: async () => {
+    if (metamaskWindow.isClosed()) {
+      const newPage = await browser.contexts()[0].newPage();
+      await Promise.all([
+        newPage.waitForNavigation(),
+        newPage.goto(
+          metamaskWindow.url().replace('onboarding.html', 'popup.html'),
+        ),
+      ]);
+      // await newPage.waitUntilStable();
+      metamaskWindow = newPage;
+    }
+
     await metamaskWindow.bringToFront();
     await module.exports.assignActiveTabName('metamask');
     return true;

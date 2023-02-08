@@ -32,6 +32,20 @@ module.exports = (on, config) => {
         '--disable-backgrounding-occluded-windows',
         '--disable-renderer-backgrounding',
       );
+      arguments_.preferences.default.profile = {
+        content_settings: {
+          exceptions: {
+            clipboard: {
+              '*': {
+                expiration: '0',
+                last_modified: '13248200230459161',
+                model: 0,
+                setting: 1,
+              },
+            },
+          },
+        },
+      };
     }
     if (!process.env.SKIP_METAMASK_INSTALL) {
       // NOTE: extensions cannot be loaded in headless Chrome

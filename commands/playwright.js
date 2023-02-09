@@ -4,6 +4,7 @@ const {
   notificationPageElements,
 } = require('../pages/metamask/notification-page');
 const { pageElements } = require('../pages/metamask/page');
+const { app } = require('../pages/phantom/notification-page');
 const sleep = require('util').promisify(setTimeout);
 
 let browser;
@@ -11,6 +12,8 @@ let mainWindow;
 let metamaskWindow;
 let metamaskNotificationWindow;
 let activeTabName;
+const notificationWindowContainsText =
+  process.env.PROVIDER === 'phantom' ? 'notification' : 'notification';
 
 let retries = 0;
 
@@ -60,7 +63,7 @@ module.exports = {
         mainWindow = page;
       } else if (page.url().includes('extension')) {
         metamaskWindow = page;
-      } else if (page.url().includes('notification')) {
+      } else if (page.url().includes(notificationWindowContainsText)) {
         metamaskNotificationWindow = page;
       }
     }
@@ -105,13 +108,21 @@ module.exports = {
   switchToMetamaskWindow: async () => {
     if (metamaskWindow.isClosed()) {
       const newPage = await browser.contexts()[0].newPage();
-      await Promise.all([
-        newPage.waitForNavigation(),
-        newPage.goto(
-          metamaskWindow.url().replace('onboarding.html', 'popup.html'),
-        ),
-      ]);
-      // await newPage.waitUntilStable();
+      if (process.env.PROVIDER === 'phantom') {
+        await Promise.all([
+          newPage.waitForNavigation(),
+          newPage.goto(
+            metamaskWindow.url().replace('onboarding.html', 'popup.html'),
+          ),
+        ]);
+      } else {
+        await Promise.all([
+          newPage.waitForNavigation(),
+          newPage.goto(metamaskWindow.url()),
+        ]);
+        await newPage.waitUntilStable();
+      }
+
       metamaskWindow = newPage;
     }
 
@@ -126,16 +137,24 @@ module.exports = {
   },
   switchToMetamaskNotification: async () => {
     let pages = await browser.contexts()[0].pages();
-    for (const page of pages) {
-      if (page.url().includes('notification')) {
+
+    // loop reverse, chance is very high that it's the last window
+    for (let i = pages.length - 1; i >= 0; i--) {
+      const page = pages[i];
+      if (page.url().includes(notificationWindowContainsText)) {
         metamaskNotificationWindow = page;
         retries = 0;
         await page.bringToFront();
         await module.exports.waitUntilStable(page);
-        await module.exports.waitFor(
-          notificationPageElements.notificationAppContent,
-          page,
-        );
+        if (process.env.PROVIDER === 'phantom') {
+          await module.exports.waitFor(app.root, page);
+        } else {
+          await module.exports.waitFor(
+            notificationPageElements.notificationAppContent,
+            page,
+          );
+        }
+
         return page;
       }
     }
@@ -271,7 +290,7 @@ module.exports = {
     }
   },
   waitUntilStable: async page => {
-    if (page && page.url().includes('notification')) {
+    if (page && page.url().includes(notificationWindowContainsText)) {
       await page.waitForLoadState('load');
       await page.waitForLoadState('domcontentloaded');
       await page.waitForLoadState('networkidle');

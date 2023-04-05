@@ -258,6 +258,18 @@ module.exports = (on, config) => {
       ).disconnectWalletFromAllDapps();
       return disconnected;
     },
+    disconnectWalletFromDapp: async () => {
+      const disconnected = await getProvider(
+        selectedProvider,
+      ).disconnectWalletFromDapp();
+      return disconnected;
+    },
+    disconnectWalletFromAllDapps: async () => {
+      const disconnected = await getProvider(
+        selectedProvider,
+      ).disconnectWalletFromAllDapps();
+      return disconnected;
+    },
 
     /**
      * @deprecated

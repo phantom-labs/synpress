@@ -421,6 +421,79 @@ module.exports = {
     );
     return true;
   },
+  disconnectWalletFromDapp: async () => {
+    await switchToPhantomIfNotActive();
+    await playwright.waitAndClick(
+      PROVIDER,
+      mainPageElements.optionsMenu.button,
+    );
+    await playwright.waitAndClick(
+      PROVIDER,
+      mainPageElements.optionsMenu.connectedSitesButton,
+    );
+    if (
+      await playwright
+        .windows(PROVIDER)
+        .locator(mainPageElements.connectedSites.disconnectLabel)
+        .isVisible()
+    ) {
+      console.log(
+        '[disconnectWalletFromDapp] Wallet is connected to a dapp, disconnecting..',
+      );
+      await playwright.waitAndClick(
+        PROVIDER,
+        mainPageElements.connectedSites.disconnectLabel,
+      );
+      await playwright.waitAndClick(
+        PROVIDER,
+        mainPageElements.connectedSites.disconnectButton,
+      );
+    } else {
+      console.log(
+        '[disconnectWalletFromDapp] Wallet is not connected to a dapp, skipping..',
+      );
+    }
+    await module.exports.closeModal();
+    await switchToCypressIfNotActive();
+    return true;
+  },
+  disconnectWalletFromAllDapps: async () => {
+    await switchToPhantomIfNotActive();
+    await playwright.waitAndClick(
+      PROVIDER,
+      mainPageElements.optionsMenu.button,
+    );
+    await playwright.waitAndClick(
+      PROVIDER,
+      mainPageElements.optionsMenu.connectedSitesButton,
+    );
+    const disconnectLabels = await playwright
+      .windows(PROVIDER)
+      .$$(mainPageElements.connectedSites.disconnectLabel);
+    if (disconnectLabels.length) {
+      console.log(
+        '[disconnectWalletFromAllDapps] Wallet is connected to dapps, disconnecting..',
+      );
+      // eslint-disable-next-line no-unused-vars
+      for (const disconnectLabel of disconnectLabels) {
+        await playwright.waitAndClick(
+          PROVIDER,
+          mainPageElements.connectedSites.disconnectLabel,
+        );
+        await playwright.waitAndClick(
+          PROVIDER,
+          mainPageElements.connectedSites.disconnectButton,
+        );
+      }
+    } else {
+      console.log(
+        '[disconnectWalletFromAllDapps] Wallet is not connected to any dapps, skipping..',
+      );
+    }
+    await module.exports.closeModal();
+    await switchToCypressIfNotActive();
+    return true;
+  },
 };
 
 async function switchToPhantomIfNotActive() {
